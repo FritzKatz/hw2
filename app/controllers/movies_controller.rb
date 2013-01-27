@@ -6,8 +6,10 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
-  def index
+  def index    
     @movies = Movie.all
+    @movies = Movie.all(:order => 'title') if params['sorted'] == 'title'
+    @movies = Movie.all(:order => 'release_date ASC') if params['sorted'] == 'release_date'    
   end
 
   def new
