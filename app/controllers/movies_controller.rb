@@ -8,8 +8,14 @@ class MoviesController < ApplicationController
 
   def index    
     @movies = Movie.all
-    @movies = Movie.all(:order => 'title') if params['sorted'] == 'title'
-    @movies = Movie.all(:order => 'release_date ASC') if params['sorted'] == 'release_date'    
+    if params['sorted'] == 'release_date'
+      @movies = Movie.all(:order => 'release_date ASC')
+      @release_date_hilite = 'hilite'
+    end 
+    if params['sorted'] == 'title'
+      @movies = Movie.all(:order => 'title')
+      @title_hilite = 'hilite'
+    end    
   end
 
   def new
