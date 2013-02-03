@@ -6,16 +6,35 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
-  def index    
+  def index
+    @all_ratings = Movie.rating_list    
     @movies = Movie.all
-    if params['sorted'] == 'release_date'
-      @movies = Movie.all(:order => 'release_date ASC')
-      @release_date_hilite = 'hilite'
-    end 
-    if params['sorted'] == 'title'
+    @checked_rating = params[:ratings]
+
+    if params[:sorted] == 'title' and params[:ratings] == nil
       @movies = Movie.all(:order => 'title')
       @title_hilite = 'hilite'
-    end    
+    end
+    if params[:sorted] == 'release_date' and params[:ratings] == nil
+      @movies = Movie.all(:order => 'release_date ASC')
+      @release_date_hilite = 'hilite'
+    end
+
+    if params[:submit] != nil or params[:ratings] != nil         
+      #@checked_rating = params[:ratings]            
+      @movies = Movie.where(:rating => @checked_rating.keys)           
+    end
+
+    if params[:sorted] == 'title' and params[:ratings] != nil
+      #@checked_rating = params[:ratings]      
+      @movies = Movie.where(:rating => @checked_rating.keys).order('title ASC')      
+      @title_hilite = 'hilite'      
+    end
+    if params[:sorted] == 'release_date' and params[:ratings] != nil
+      #@checked_rating = params[:ratings]      
+      @movies = Movie.where(:rating => @checked_rating.keys).order('release_date ASC')
+      @release_date_hilite = 'hilite'
+    end
   end
 
   def new
