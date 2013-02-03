@@ -11,6 +11,10 @@ class MoviesController < ApplicationController
     @movies = Movie.all
     @checked_rating = params[:ratings]
 
+    if session[:ratings] != nil
+      @movies = Movie.where(:rating => session[:ratings].keys)
+    end
+
     if params[:sorted] == 'title' and params[:ratings] == nil
       @movies = Movie.all(:order => 'title')
       @title_hilite = 'hilite'
@@ -20,10 +24,14 @@ class MoviesController < ApplicationController
       @release_date_hilite = 'hilite'
     end
 
-    if params[:submit] != nil or params[:ratings] != nil         
+
+    if params[:submit] != nil or params[:ratings] != nil
+      session.clear
+      session[:ratings] = params[:ratings]        
       #@checked_rating = params[:ratings]            
       @movies = Movie.where(:rating => @checked_rating.keys)           
     end
+
 
     if params[:sorted] == 'title' and params[:ratings] != nil
       #@checked_rating = params[:ratings]      
