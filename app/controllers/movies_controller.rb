@@ -7,42 +7,133 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = Movie.rating_list    
-    @movies = Movie.all
-    @checked_rating = params[:ratings]
+    @all_ratings = Movie.rating_list        
+    @checked_rating = params[:ratings] || session[:ratings] || {}
+    sorted = params[:sorted] || session[:sorted]
+   
 
-    if session[:ratings] != nil
-      @movies = Movie.where(:rating => session[:ratings].keys)
+   
+    # #If the session contains ratings these will be used
+    # if session[:ratings] == nil && session[:sorted] == nil
+    #   @movies = Movie.all
+    #   #params[:ratings] = session[:ratings]      
+    # elsif session[:ratings] != nil || session[:sorted] != nil      
+    #   params[:sorted] = session[:sorted]
+    #   params[:ratings] = session[:ratings]
+    #   redirect_to :action => :index
+    #   #redirect_to :sorted => params[:sorted], :ratings => params[:ratings] #and return
+    #   #@movies = Movie.where(:rating => session[:ratings].keys).order(sorted)            
+    # end
+
+    # If all checkboxes are unchecked the settings stored in the session hash will be used
+
+    if @checked_rating == {}           
+      @all_ratings.each do |rating|
+        @checked_rating[rating] = rating
+      end
     end
 
-    if params[:sorted] == 'title' and params[:ratings] == nil
-      @movies = Movie.all(:order => 'title')
+    # If the values of the params and session hash differ   
+
+    if params[:ratings] != session[:ratings] || params[:sorted] != session[:sorted]
+      session[:sorted] = sorted
+      session[:ratings] = @checked_rating
+      flash.keep
+      redirect_to :sorted => sorted, :ratings => @checked_rating and return
+    end      
+    
+    # The list is either being sorted by title or by release_date with all ratings
+    
+    if params[:sorted] == 'title'
       @title_hilite = 'hilite'
-    end
-    if params[:sorted] == 'release_date' and params[:ratings] == nil
-      @movies = Movie.all(:order => 'release_date ASC')
+      session[:sorted] = params[:sorted]
+      session[:ratings] = params[:ratings]
+      if params[:ratings] == nil
+        @movies = Movie.where(:rating => session[:ratings].keys).order('title ASC')        
+        #@movies = Movie.all(:order => 'title')
+      elsif params[:ratings] != nil        
+        @movies = Movie.where(:rating => @checked_rating.keys).order('title ASC')
+      end
+    elsif params[:sorted] == 'release_date'
       @release_date_hilite = 'hilite'
+      session[:sorted] = params[:sorted]
+      session[:ratings] = params[:ratings] 
+      if params[:ratings] == nil
+        @movies = Movie.where(:rating => session[:ratings].keys).order('release_date ASC')        
+        #@movies = Movie.all(:order => 'release_date ASC')
+      elsif params[:ratings] != nil        
+        @movies = Movie.where(:rating => @checked_rating.keys).order('release_date ASC')
+      end
     end
 
+    # if params[:commit] != nil && params[:ratings] != nil      
+    #   session.clear
+    #   session[:ratings] = params[:ratings]
+    #   @movies = Movie.where(:rating => @checked_rating.keys)
+    # elsif params[:commit] != nil && params[:ratings] == nil 
+    #   session.clear
+    #   session[:ratings] = params[:ratings]
+    #   @movies = Movie.where(:rating => [])      
+    # end
+    
 
-    if params[:submit] != nil or params[:ratings] != nil
-      session.clear
-      session[:ratings] = params[:ratings]        
-      #@checked_rating = params[:ratings]            
-      @movies = Movie.where(:rating => @checked_rating.keys)           
-    end
+     
+    ###########################
 
+    # The list is being sorted by title with all ratings
 
-    if params[:sorted] == 'title' and params[:ratings] != nil
-      #@checked_rating = params[:ratings]      
-      @movies = Movie.where(:rating => @checked_rating.keys).order('title ASC')      
-      @title_hilite = 'hilite'      
-    end
-    if params[:sorted] == 'release_date' and params[:ratings] != nil
-      #@checked_rating = params[:ratings]      
-      @movies = Movie.where(:rating => @checked_rating.keys).order('release_date ASC')
-      @release_date_hilite = 'hilite'
-    end
+    # if params[:sorted] == 'title' and params[:ratings] == nil
+    #   session[:sorted] = params[:sorted]
+    #   @movies = Movie.all(:order => 'title')
+    #   @title_hilite = 'hilite'
+    # end
+
+    # The complete list is being sorted by release date with all ratings
+
+    # if params[:sorted] == 'release_date' and params[:ratings] == nil
+    #   session[:sorted] = params[:sorted]
+    #   @movies = Movie.all(:order => 'release_date ASC')
+    #   @release_date_hilite = 'hilite'
+    # end
+
+    # The refresh buttion is used and the list is filtered by the selected ratings; the session is reset
+
+    # if params[:submit] != nil #or params[:ratings] != nil
+    #   session.clear
+    #   session[:ratings] = params[:ratings]        
+    #   #@checked_rating = params[:ratings]            
+    #   @movies = Movie.where(:rating => @checked_rating.keys)           
+    # end
+
+    # The selected list is being sorted by title
+
+    # if params[:sorted] == 'title' and params[:ratings] != nil
+    #   #@checked_rating = params[:ratings]
+    #   session[:sorted] = params[:sorted]      
+    #   @movies = Movie.where(:rating => @checked_rating.keys).order('title ASC')      
+    #   @title_hilite = 'hilite'      
+    # end
+
+    # The selected list is being sorted by release date
+
+    # if params[:sorted] == 'release_date' and params[:ratings] != nil
+    #   #@checked_rating = params[:ratings]
+    #   session[:sorted] = params[:sorted]      
+    #   @movies = Movie.where(:rating => @checked_rating.keys).order('release_date ASC')
+    #   @release_date_hilite = 'hilite'
+    # end
+
+    ######
+    # if params[:sorted] != session[:sorted] or params[:ratings] != session[:ratings]
+
+    #   session[:sorted] = sorted
+    #   session[:ratings] = @checked_rating
+    #   @movies = Movie.where(:rating => @checked_rating.keys).order('title ASC') 
+    #   redirect_to :sorted => sorted, :ratings => @checked_rating and return
+    # end
+    # @movies = Movie.find_all_by_rating(@selected_ratings.keys, ordering)
+#####
+
   end
 
   def new
