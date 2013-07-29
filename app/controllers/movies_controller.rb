@@ -10,6 +10,7 @@ class MoviesController < ApplicationController
     @all_ratings = Movie.rating_list        
     @checked_rating = params[:ratings] || session[:ratings] || {}
     sorted = params[:sorted] || session[:sorted]
+    #@movies = Movie.all
    
 
    
@@ -64,6 +65,14 @@ class MoviesController < ApplicationController
       elsif params[:ratings] != nil        
         @movies = Movie.where(:rating => @checked_rating.keys).order('release_date ASC')
       end
+    elsif params[:sorted] == nil
+      session[:sorted] = params[:sorted]
+      session[:ratings] = params[:ratings] 
+      #if params[:ratings] == nil
+        #@movies = Movie.where(:rating => @checked_rating.keys)
+      #elsif params[:ratings] != nil        
+        @movies = Movie.where(:rating => @checked_rating.keys)
+      #end
     end
 
     # if params[:commit] != nil && params[:ratings] != nil      
